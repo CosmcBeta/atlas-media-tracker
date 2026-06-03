@@ -29,3 +29,5 @@ rustc-ice-*.txt
 .idea
 .vs
 .vscode
+.env
+*.db
