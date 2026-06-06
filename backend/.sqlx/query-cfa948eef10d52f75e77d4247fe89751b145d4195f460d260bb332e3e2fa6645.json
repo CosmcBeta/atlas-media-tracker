@@ -1,0 +1,12 @@
+{
+  "db_name": "SQLite",
+  "query": "INSERT INTO items (id, media_type, title, external_id, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
+  "describe": {
+    "columns": [],
+    "parameters": {
+      "Right": 7
+    },
+    "nullable": []
+  },
+  "hash": "cfa948eef10d52f75e77d4247fe89751b145d4195f460d260bb332e3e2fa6645"
+}

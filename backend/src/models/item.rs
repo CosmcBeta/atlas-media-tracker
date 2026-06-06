@@ -6,12 +6,12 @@ use uuid::Uuid;
 #[derive(Debug, Serialize, Deserialize, Clone, FromRow)]
 pub struct Item {
     pub id: Uuid,
-    pub mediaType: MediaType,
+    pub media_type: MediaType,
     pub title: String,
-    pub externalId: Option<String>,
-    pub metaData: Option<serde_json::Value>,
-    pub createdAt: DateTime<Utc>,
-    pub updatedAt: DateTime<Utc>,
+    pub external_id: Option<String>,
+    pub metadata: Option<String>,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::Type)]
