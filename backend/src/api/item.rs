@@ -32,10 +32,10 @@ pub async fn get_items(State(state): State<AppState>) -> impl IntoResponse {
 pub async fn create_item(State(state): State<AppState>) -> impl IntoResponse {
     sqlx::query!(
         "INSERT INTO items (id, media_type, title, external_id, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        Uuid::new_v4().to_string(), MediaType::Show, "One Piece".to_string(), None::<String>, None::<String>, Utc::now().to_rfc3339(), Utc::now().to_rfc3339()
+        Uuid::new_v4(), MediaType::Show, "One Piece".to_string(), None::<String>, None::<String>, Utc::now().to_rfc3339(), Utc::now().to_rfc3339()
     ).execute(&state.db).await.unwrap();
 
-    StatusCode::CREATED
+    StatusCode::CREATED // can also return the created item, but nothing rn
 }
 pub async fn get_item(State(state): State<AppState>) -> impl IntoResponse {}
 pub async fn update_item(State(state): State<AppState>) -> impl IntoResponse {}

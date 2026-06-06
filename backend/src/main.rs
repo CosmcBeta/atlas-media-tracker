@@ -20,9 +20,11 @@ async fn main() {
 
     let app = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
-        .route("/items", get(item::get_item))
+        .route("/items", get(item::get_items).post(item::create_item))
         .with_state(state);
 
-    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}")).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(format!("0.0.0.0:{port}"))
+        .await
+        .unwrap();
     axum::serve(listener, app).await.unwrap();
 }
