@@ -3,10 +3,16 @@ pub mod db;
 pub mod models;
 pub mod state;
 
-use axum::{Router, routing::get};
+use axum::{
+    Router,
+    routing::{delete, get, patch},
+};
 use dotenvy::dotenv;
 
-use crate::{api::item, state::AppState};
+use crate::{
+    api::{item, list},
+    state::AppState,
+};
 
 #[tokio::main]
 async fn main() {
@@ -26,6 +32,19 @@ async fn main() {
             get(item::get_item)
                 .patch(item::update_item)
                 .delete(item::delete_item),
+        )
+        .route("/lists", get(list::get_lists).post(list::create_list))
+        .route(
+            "/lists/{id}",
+            patch(list::update_list).delete(list::delete_list),
+        )
+        .route(
+            "/lists/{id}/items",
+            get(list::get_list_items).post(list::add_item_to_list),
+        )
+        .route(
+            "/lists/{id}/items/{item_id}",
+            delete(list::delete_item_from_list),
         )
         .with_state(state);
 

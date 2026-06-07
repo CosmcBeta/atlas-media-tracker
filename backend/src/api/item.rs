@@ -1,20 +1,19 @@
-use axum::Json;
-use axum::extract::Path;
-use axum::http::StatusCode;
-use axum::{extract::State, response::IntoResponse};
+use axum::{
+    Json,
+    extract::{Path, State},
+    http::StatusCode,
+    response::IntoResponse,
+};
 use chrono::{DateTime, Utc};
-use sqlx::sqlite::SqliteArguments;
-use sqlx::{Arguments, AssertSqlSafe, query};
+use sqlx::{Arguments, AssertSqlSafe, query, sqlite::SqliteArguments};
 use uuid::Uuid;
 
-use crate::models::item::{CreateItem, UpdateItem};
 use crate::{
-    models::item::{Item, MediaType},
+    models::item::{CreateItem, Item, MediaType, UpdateItem},
     state::AppState,
 };
 
 pub async fn get_items(State(state): State<AppState>) -> impl IntoResponse {
-    // use the non macro version if we don't have a guarenteed string like the one below, basically if we have filters
     let items = sqlx::query_as!(
         Item,
         r#"SELECT
@@ -137,7 +136,7 @@ pub async fn update_item(
 }
 
 pub async fn delete_item(Path(id): Path<Uuid>, State(state): State<AppState>) -> impl IntoResponse {
-    let _ = query!("DELETE FROM items WHERE id = ?", id)
+    query!("DELETE FROM items WHERE id = ?", id)
         .execute(&state.db)
         .await
         .unwrap();

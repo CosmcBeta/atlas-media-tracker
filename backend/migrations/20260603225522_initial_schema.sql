@@ -12,7 +12,8 @@ CREATE TABLE lists (
     id         TEXT PRIMARY KEY,
     name       TEXT NOT NULL,
     icon       TEXT,
-    created_at TEXT NOT NULL
+    created_at TEXT NOT NULL,
+    updated_at TEXT NOT NULL
 );
 
 CREATE TABLE list_items (
