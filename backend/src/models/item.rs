@@ -25,3 +25,19 @@ pub enum MediaType {
     Game,
     Podcast,
 }
+
+// These two might change in the future when I include the external api's
+
+#[derive(Debug, Deserialize)]
+pub struct CreateItem {
+    pub media_type: MediaType,
+    pub title: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateItem {
+    pub media_type: Option<MediaType>,
+    pub title: Option<String>,
+    pub external_id: Option<String>,
+    pub metadata: Option<String>,
+}

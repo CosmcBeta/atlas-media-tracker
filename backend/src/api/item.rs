@@ -1,9 +1,13 @@
 use axum::Json;
+use axum::extract::Path;
 use axum::http::StatusCode;
 use axum::{extract::State, response::IntoResponse};
 use chrono::{DateTime, Utc};
+use sqlx::sqlite::SqliteArguments;
+use sqlx::{Arguments, AssertSqlSafe, query};
 use uuid::Uuid;
 
+use crate::models::item::{CreateItem, UpdateItem};
 use crate::{
     models::item::{Item, MediaType},
     state::AppState,
@@ -29,33 +33,114 @@ pub async fn get_items(State(state): State<AppState>) -> impl IntoResponse {
 
     Json(items)
 }
-pub async fn create_item(State(state): State<AppState>) -> impl IntoResponse {
+
+pub async fn create_item(
+    State(state): State<AppState>,
+    Json(input): Json<CreateItem>,
+) -> impl IntoResponse {
+    let item = Item {
+        id: Uuid::new_v4(),
+        media_type: input.media_type,
+        title: input.title,
+        external_id: None, // none for now until we get external api
+        metadata: None,
+        created_at: Utc::now(),
+        updated_at: Utc::now(),
+    };
+
     sqlx::query!(
-        "INSERT INTO items (id, media_type, title, external_id, metadata, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)",
-        Uuid::new_v4(), MediaType::Show, "One Piece".to_string(), None::<String>, None::<String>, Utc::now().to_rfc3339(), Utc::now().to_rfc3339()
-    ).execute(&state.db).await.unwrap();
+        r#"INSERT INTO items (id, media_type, title, external_id, metadata, created_at, updated_at)
+        VALUES (?, ?, ?, ?, ?, ?, ?)"#,
+        item.id,
+        item.media_type,
+        item.title,
+        item.external_id,
+        item.metadata,
+        item.created_at.to_rfc3339(),
+        item.updated_at.to_rfc3339()
+    )
+    .execute(&state.db)
+    .await
+    .unwrap();
 
-    StatusCode::CREATED // can also return the created item, but nothing rn
+    (StatusCode::CREATED, Json(item))
 }
-pub async fn get_item(State(state): State<AppState>) -> impl IntoResponse {}
-pub async fn update_item(State(state): State<AppState>) -> impl IntoResponse {}
-pub async fn delete_item(State(state): State<AppState>) -> impl IntoResponse {}
 
-// async fn items_index(State(db): State<Db>) -> impl IntoResponse {
-//     let items = db.read().unwrap();
+pub async fn get_item(Path(id): Path<Uuid>, State(state): State<AppState>) -> impl IntoResponse {
+    let item = sqlx::query_as!(
+        Item,
+        r#"SELECT
+        id AS "id!: Uuid",
+        media_type AS "media_type: MediaType",
+        title,
+        external_id,
+        metadata,
+        created_at as "created_at: DateTime<Utc>",
+        updated_at as "updated_at: DateTime<Utc>"
+        FROM items WHERE id = ?"#,
+        id
+    )
+    .fetch_optional(&state.db)
+    .await
+    .unwrap();
 
-//     let items = items.values().cloned().collect::<Vec<_>>();
+    match item {
+        Some(item) => (StatusCode::OK, Json(item)).into_response(),
+        None => StatusCode::NOT_FOUND.into_response(),
+    }
+}
 
-//     Json(items)
-// }
+pub async fn update_item(
+    Path(id): Path<Uuid>,
+    State(state): State<AppState>,
+    Json(input): Json<UpdateItem>,
+) -> impl IntoResponse {
+    let mut sets = Vec::new();
+    let mut args = SqliteArguments::default();
 
-// async fn items_create(State(db): State<Db>) -> impl IntoResponse {
-//     let item = Item {
-//         id: Uuid::new_v4(),
-//         text: "Hey man".to_string(),
-//     };
+    if let Some(title) = input.title {
+        sets.push("title = ?");
+        let _ = args.add(title);
+    }
 
-//     db.write().unwrap().insert(item.id, item.clone());
+    if let Some(media_type) = input.media_type {
+        sets.push("media_type = ?");
+        let _ = args.add(media_type);
+    }
 
-//     (StatusCode::CREATED, Json(item))
-// }
+    if let Some(external_id) = input.external_id {
+        sets.push("external_id = ?");
+        let _ = args.add(external_id);
+    }
+
+    if let Some(metadata) = input.metadata {
+        sets.push("metadata = ?");
+        let _ = args.add(metadata);
+    }
+
+    if sets.is_empty() {
+        return StatusCode::BAD_REQUEST;
+    }
+
+    sets.push("updated_at = ?");
+    let _ = args.add(Utc::now().to_rfc3339());
+
+    let query = format!("UPDATE items SET {} WHERE id = ?", sets.join(", "));
+    let _ = args.add(&id);
+
+    sqlx::query_with(AssertSqlSafe(query), args)
+        .execute(&state.db)
+        .await
+        .unwrap();
+
+    StatusCode::OK
+}
+
+pub async fn delete_item(Path(id): Path<Uuid>, State(state): State<AppState>) -> impl IntoResponse {
+    let _ = query!("DELETE FROM items WHERE id = ?", id)
+        .execute(&state.db)
+        .await
+        .unwrap();
+
+    StatusCode::NO_CONTENT
+}

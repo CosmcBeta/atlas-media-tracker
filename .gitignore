@@ -31,3 +31,5 @@ rustc-ice-*.txt
 .vscode
 .env
 *.db
+*.db-shm
+*.db-wal
