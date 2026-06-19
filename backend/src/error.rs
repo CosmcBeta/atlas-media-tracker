@@ -16,8 +16,10 @@ pub enum AppError {
     Encode(#[from] Box<dyn std::error::Error + Send + Sync>),
     #[error("invalid date format: {0}")]
     ParseError(String),
-    #[error("external API error: {0}")]
-    ExternalApi(#[from] reqwest::Error),
+    #[error("external API request error: {0}")]
+    ExternalApiRequest(#[from] reqwest::Error),
+    #[error("external API returned error: {0}")]
+    ExternalApi(String),
     #[error("item with this external id and media type already exists")]
     Conflict,
 }
@@ -30,7 +32,8 @@ impl IntoResponse for AppError {
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::Encode(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             AppError::ParseError(msg) => (StatusCode::BAD_REQUEST, msg),
-            AppError::ExternalApi(_) => (StatusCode::BAD_GATEWAY, self.to_string()),
+            AppError::ExternalApiRequest(_) => (StatusCode::BAD_GATEWAY, self.to_string()),
+            AppError::ExternalApi(msg) => (StatusCode::BAD_GATEWAY, msg),
             AppError::Conflict => (StatusCode::CONFLICT, self.to_string()),
         };
 

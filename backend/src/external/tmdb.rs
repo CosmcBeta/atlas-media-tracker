@@ -1,7 +1,10 @@
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
 
-use crate::models::{item::MediaType, search::SearchCandidate};
+use crate::{
+    error::AppError,
+    models::{item::MediaType, search::SearchCandidate},
+};
 
 #[derive(Debug, Deserialize, Serialize)]
 pub struct TmdbShow {
@@ -24,7 +27,7 @@ impl From<TmdbShow> for SearchCandidate {
         let metadata = serde_json::to_string(&api).expect("failed to serialize metadata");
 
         SearchCandidate {
-            external_id: api.id,
+            external_id: api.id.to_string(),
             title: api.name,
             media_type: MediaType::Show,
             year: api.first_air_date,
@@ -46,17 +49,22 @@ pub async fn search_shows(
     client: &Client,
     access_token: &str,
     query: &str,
-) -> Result<Vec<SearchCandidate>, reqwest::Error> {
+) -> Result<Vec<SearchCandidate>, AppError> {
     let response = client
         .get("https://api.themoviedb.org/3/search/tv")
         .bearer_auth(access_token)
         .query(&[("query", query)])
         .send()
-        .await?
-        .json::<TmdbShowSearchResponse>()
         .await?;
 
-    Ok(response.results.into_iter().map(Into::into).collect())
+    if !response.status().is_success() {
+        let body = response.text().await?;
+        return Err(AppError::ExternalApi(format!("TMDB error: {body}")));
+    }
+
+    let data = response.json::<TmdbShowSearchResponse>().await?;
+
+    Ok(data.results.into_iter().map(Into::into).collect())
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -79,7 +87,7 @@ impl From<TmdbMovie> for SearchCandidate {
         let metadata = serde_json::to_string(&api).expect("failed to serialize metadata");
 
         SearchCandidate {
-            external_id: api.id,
+            external_id: api.id.to_string(),
             title: api.title,
             media_type: MediaType::Movie,
             year: api.release_date,
@@ -101,15 +109,20 @@ pub async fn search_movies(
     client: &Client,
     access_token: &str,
     query: &str,
-) -> Result<Vec<SearchCandidate>, reqwest::Error> {
+) -> Result<Vec<SearchCandidate>, AppError> {
     let response = client
         .get("https://api.themoviedb.org/3/search/movie")
         .bearer_auth(access_token)
         .query(&[("query", query)])
         .send()
-        .await?
-        .json::<TmdbMovieSearchResponse>()
         .await?;
 
-    Ok(response.results.into_iter().map(Into::into).collect())
+    if !response.status().is_success() {
+        let body = response.text().await?;
+        return Err(AppError::ExternalApi(format!("TMDB error: {body}")));
+    }
+
+    let data = response.json::<TmdbMovieSearchResponse>().await?;
+
+    Ok(data.results.into_iter().map(Into::into).collect())
 }

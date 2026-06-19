@@ -4,7 +4,7 @@ use crate::models::item::MediaType;
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct SearchCandidate {
-    pub external_id: i64,
+    pub external_id: String,
     pub title: String,
     pub media_type: MediaType,
     pub year: Option<String>,

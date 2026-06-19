@@ -262,7 +262,7 @@ async fn import_item_returns_201_with_item() {
     let response = server
         .post("/items/import")
         .json(&json!({
-            "external_id": 37854,
+            "external_id": "37854",
             "title": "One Piece",
             "year": "1999-10-20",
             "media_type": "show",
@@ -289,7 +289,7 @@ async fn import_item_returns_409_with_existing_external_id() {
     server
         .post("/items/import")
         .json(&json!({
-            "external_id": 37854,
+            "external_id": "37854",
             "title": "One Piece",
             "year": "1999-10-20",
             "media_type": "show",
@@ -306,7 +306,7 @@ async fn import_item_returns_409_with_existing_external_id() {
     let response = server
         .post("/items/import")
         .json(&json!({
-            "external_id": 37854,
+            "external_id": "37854",
             "title": "ONE PIECE",
             "year": "2023-08-31",
             "media_type": "show",

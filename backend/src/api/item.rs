@@ -10,7 +10,7 @@ use uuid::Uuid;
 
 use crate::{
     error::AppError,
-    external::tmdb,
+    external::{musicbrainz, tmdb},
     models::{
         item::{CreateItem, Item, MediaType, SearchParams, UpdateItem},
         search::SearchCandidate,
@@ -148,6 +148,10 @@ pub async fn search_items(
             )
             .await?
         }
+        MediaType::Album => {
+            musicbrainz::search_release_groups(&state.client.client, &params.q).await?
+        }
+        MediaType::Artist => musicbrainz::search_artists(&state.client.client, &params.q).await?,
         _ => return Err(AppError::BadRequest("unsupported media type".to_string())),
     };
 
@@ -162,7 +166,7 @@ pub async fn import_item(
         id: Uuid::new_v4(),
         media_type: candidate.media_type,
         title: candidate.title,
-        external_id: Some(candidate.external_id.to_string()),
+        external_id: Some(candidate.external_id),
         metadata: Some(candidate.metadata),
         created_at: Utc::now(),
         updated_at: Utc::now(),
@@ -216,6 +220,6 @@ async fn insert_item(pool: &SqlitePool, item: &Item) -> Result<(), AppError> {
         Err(sqlx::Error::Database(db_err)) if db_err.is_unique_violation() => {
             Err(AppError::Conflict)
         }
-        Err(e) => Err(AppError::Database(e))
+        Err(e) => Err(AppError::Database(e)),
     }
 }
