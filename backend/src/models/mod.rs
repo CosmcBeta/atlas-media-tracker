@@ -1,3 +1,4 @@
 pub mod item;
 pub mod list;
 pub mod progress;
+pub mod search;

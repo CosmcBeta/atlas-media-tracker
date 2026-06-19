@@ -1,6 +1,7 @@
 pub mod api;
 pub mod db;
 pub mod error;
+pub mod external;
 pub mod models;
 pub mod state;
 
@@ -18,6 +19,7 @@ pub fn create_router(state: AppState) -> Router {
     Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route("/items", get(item::get_items).post(item::create_item))
+        .route("/items/search", get(item::search_items))
         .route(
             "/items/{id}",
             get(item::get_item)

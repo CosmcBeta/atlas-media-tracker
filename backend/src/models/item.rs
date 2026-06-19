@@ -16,6 +16,7 @@ pub struct Item {
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::Type)]
 #[sqlx(type_name = "TEXT", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum MediaType {
     Movie,
     Show,
@@ -25,8 +26,6 @@ pub enum MediaType {
     Game,
     Podcast,
 }
-
-// These two might change in the future when I include the external api's
 
 #[derive(Debug, Deserialize)]
 pub struct CreateItem {
@@ -40,4 +39,10 @@ pub struct UpdateItem {
     pub title: Option<String>,
     pub external_id: Option<String>,
     pub metadata: Option<String>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct SearchParams {
+    pub q: String,
+    pub media_type: MediaType,
 }

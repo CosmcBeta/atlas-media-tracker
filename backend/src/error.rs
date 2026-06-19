@@ -16,6 +16,8 @@ pub enum AppError {
     Encode(#[from] Box<dyn std::error::Error + Send + Sync>),
     #[error("invalid date format: {0}")]
     ParseError(String),
+    #[error("external API error: {0}")]
+    ExternalApi(#[from] reqwest::Error),
 }
 
 impl IntoResponse for AppError {
@@ -26,6 +28,7 @@ impl IntoResponse for AppError {
             AppError::BadRequest(msg) => (StatusCode::BAD_REQUEST, msg),
             AppError::Encode(_) => (StatusCode::INTERNAL_SERVER_ERROR, self.to_string()),
             AppError::ParseError(msg) => (StatusCode::BAD_REQUEST, msg),
+            AppError::ExternalApi(_) => (StatusCode::BAD_GATEWAY, self.to_string()),
         };
 
         (status, message).into_response()

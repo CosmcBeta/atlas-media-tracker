@@ -1,6 +1,9 @@
 use sqlx::SqlitePool;
 
-#[derive(Clone)]
+use crate::external::client::ApiClient;
+
+#[derive(Debug, Clone)]
 pub struct AppState {
     pub db: SqlitePool,
+    pub client: ApiClient,
 }

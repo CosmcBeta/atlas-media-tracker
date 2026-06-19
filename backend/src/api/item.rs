@@ -1,6 +1,6 @@
 use axum::{
     Json,
-    extract::{Path, State},
+    extract::{Path, Query, State},
     http::StatusCode,
     response::IntoResponse,
 };
@@ -10,7 +10,8 @@ use uuid::Uuid;
 
 use crate::{
     error::AppError,
-    models::item::{CreateItem, Item, MediaType, UpdateItem},
+    external::tmdb,
+    models::item::{CreateItem, Item, MediaType, SearchParams, UpdateItem},
     state::AppState,
 };
 
@@ -133,6 +134,33 @@ pub async fn delete_item(
     } else {
         Ok(StatusCode::NO_CONTENT)
     }
+}
+
+pub async fn search_items(
+    State(state): State<AppState>,
+    Query(params): Query<SearchParams>,
+) -> Result<impl IntoResponse, AppError> {
+    let results = match params.media_type {
+        MediaType::Show => {
+            tmdb::search_shows(
+                &state.client.client,
+                &state.client.tmdb_access_token,
+                &params.q,
+            )
+            .await?
+        }
+        MediaType::Movie => {
+            tmdb::search_movies(
+                &state.client.client,
+                &state.client.tmdb_access_token,
+                &params.q,
+            )
+            .await?
+        }
+        _ => return Err(AppError::BadRequest("unsupported media type".to_string())),
+    };
+
+    Ok(Json(results))
 }
 
 pub async fn get_item_by_id(pool: &SqlitePool, id: &Uuid) -> Result<Item, AppError> {
