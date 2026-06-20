@@ -161,7 +161,16 @@ pub async fn search_items(
             )
             .await?
         }
-        _ => return Err(AppError::BadRequest("unsupported media type".to_string())),
+        MediaType::Book => {
+            return Err(AppError::BadRequest(
+                "book search is not yet implemented".to_string(),
+            ));
+        }
+        MediaType::Podcast => {
+            return Err(AppError::BadRequest(
+                "podcast search is not yet implemented".to_string(),
+            ));
+        }
     };
 
     Ok(Json(results))

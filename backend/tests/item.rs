@@ -256,6 +256,32 @@ async fn search_items_returns_400_for_unsupported_media_type() {
 }
 
 #[tokio::test]
+async fn search_items_returns_400_for_unimplemented_book() {
+    let server = setup().await;
+
+    let response = server
+        .get("/items/search")
+        .add_query_param("q", "Dune")
+        .add_query_param("media_type", "book")
+        .await;
+
+    response.assert_status_bad_request();
+}
+
+#[tokio::test]
+async fn search_items_returns_400_for_unimplemented_podcast() {
+    let server = setup().await;
+
+    let response = server
+        .get("/items/search")
+        .add_query_param("q", "Call Her Daddy")
+        .add_query_param("media_type", "podcast")
+        .await;
+
+    response.assert_status_bad_request();
+}
+
+#[tokio::test]
 async fn import_item_returns_201_with_item() {
     let server = setup().await;
 
