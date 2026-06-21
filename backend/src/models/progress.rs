@@ -15,6 +15,7 @@ pub struct Progress {
 
 #[derive(Debug, Serialize, Deserialize, Clone, sqlx::Type)]
 #[sqlx(type_name = "TEXT", rename_all = "lowercase")]
+#[serde(rename_all = "lowercase")]
 pub enum ProgressKind {
     Episode,
     Page,

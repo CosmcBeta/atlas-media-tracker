@@ -16,7 +16,7 @@ use crate::{
 };
 
 pub fn create_router(state: AppState) -> Router {
-    Router::new()
+    let api_router = Router::new()
         .route("/", get(|| async { "Hello, World!" }))
         .route("/items", get(item::get_items).post(item::create_item))
         .route("/items/search", get(item::search_items))
@@ -45,5 +45,7 @@ pub fn create_router(state: AppState) -> Router {
             delete(list::delete_item_from_list),
         )
         .route("/progress/{id}", delete(progress::delete_item_progress))
-        .with_state(state)
+        .with_state(state);
+
+    Router::new().nest("/api/v1", api_router)
 }
