@@ -10,6 +10,9 @@ use backend::{
 };
 
 #[allow(dead_code)]
+pub const API: &str = "/api/v1";
+
+#[allow(dead_code)]
 pub async fn setup() -> TestServer {
     dotenvy::dotenv().ok();
 

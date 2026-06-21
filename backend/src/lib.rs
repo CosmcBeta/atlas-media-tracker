@@ -17,7 +17,7 @@ use crate::{
 
 pub fn create_router(state: AppState) -> Router {
     let api_router = Router::new()
-        .route("/", get(|| async { "Hello, World!" }))
+        .route("/health", get(|| async { "ok" }))
         .route("/items", get(item::get_items).post(item::create_item))
         .route("/items/search", get(item::search_items))
         .route("/items/import", post(item::import_item))

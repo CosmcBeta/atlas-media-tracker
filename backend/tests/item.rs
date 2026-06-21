@@ -9,7 +9,7 @@ use common::setup;
 #[tokio::test]
 async fn get_items_returns_empty_array_when_none_exist() {
     let server = setup().await;
-    let response = server.get("/items").await;
+    let response = server.get(&format!("{}/items", common::API)).await;
 
     response.assert_json(&json!([]));
 }
@@ -19,15 +19,15 @@ async fn get_items_returns_all_items() {
     let server = setup().await;
 
     server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
     server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "movie", "title": "Scary Movie"}))
         .await;
 
-    let response = server.get("/items").await;
+    let response = server.get(&format!("{}/items", common::API)).await;
 
     response.assert_status_ok();
 
@@ -40,7 +40,7 @@ async fn create_item_returns_201_with_item() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
     let body: serde_json::Value = response.json();
@@ -56,7 +56,7 @@ async fn create_item_returns_422_with_missing_required_fields() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show"}))
         .await;
 
@@ -69,7 +69,7 @@ async fn get_item_returns_404_when_not_found() {
 
     let uuid = Uuid::new_v4();
 
-    let response = server.get(&format!("/items/{uuid}")).await;
+    let response = server.get(&format!("{}/items/{uuid}", common::API)).await;
 
     response.assert_status_not_found();
 }
@@ -79,14 +79,14 @@ async fn get_item_returns_item_when_found() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
 
     let body: serde_json::Value = response.json();
     let uuid = body["id"].as_str().unwrap();
 
-    let response = server.get(&format!("/items/{uuid}")).await;
+    let response = server.get(&format!("{}/items/{uuid}", common::API)).await;
     let body: serde_json::Value = response.json();
 
     response.assert_status_ok();
@@ -100,7 +100,7 @@ async fn update_item_returns_400_with_no_fields() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
 
@@ -108,7 +108,7 @@ async fn update_item_returns_400_with_no_fields() {
     let uuid = body["id"].as_str().unwrap();
 
     let response = server
-        .patch(&format!("/items/{uuid}"))
+        .patch(&format!("{}/items/{uuid}", common::API))
         .json(&json!({}))
         .await;
 
@@ -122,7 +122,7 @@ async fn update_item_returns_404_when_not_found() {
     let uuid = Uuid::new_v4();
 
     let response = server
-        .patch(&format!("/items/{uuid}"))
+        .patch(&format!("{}/items/{uuid}", common::API))
         .json(&json!({"media_type": "movie"}))
         .await;
 
@@ -134,7 +134,7 @@ async fn update_item_returns_updated_item() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
 
@@ -145,7 +145,7 @@ async fn update_item_returns_updated_item() {
     assert_eq!(body["title"], "One Piece");
 
     let response = server
-        .patch(&format!("/items/{uuid}"))
+        .patch(&format!("{}/items/{uuid}", common::API))
         .json(&json!({"title": "Attack On Titan"}))
         .await;
     let body: serde_json::Value = response.json();
@@ -161,7 +161,7 @@ async fn update_item_changes_are_persisted() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
 
@@ -169,11 +169,11 @@ async fn update_item_changes_are_persisted() {
     let uuid = body["id"].as_str().unwrap();
 
     server
-        .patch(&format!("/items/{uuid}"))
+        .patch(&format!("{}/items/{uuid}", common::API))
         .json(&json!({"title": "Attack On Titan"}))
         .await;
 
-    let response = server.get(&format!("/items/{uuid}")).await;
+    let response = server.get(&format!("{}/items/{uuid}", common::API)).await;
     let body: serde_json::Value = response.json();
 
     assert_eq!(body["media_type"], "show");
@@ -186,7 +186,9 @@ async fn delete_item_returns_404_when_not_found() {
 
     let uuid = Uuid::new_v4();
 
-    let response = server.delete(&format!("/items/{uuid}")).await;
+    let response = server
+        .delete(&format!("{}/items/{uuid}", common::API))
+        .await;
 
     response.assert_status_not_found();
 }
@@ -196,14 +198,16 @@ async fn delete_item_returns_204() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
 
     let body: serde_json::Value = response.json();
     let uuid = body["id"].as_str().unwrap();
 
-    let response = server.delete(&format!("/items/{uuid}")).await;
+    let response = server
+        .delete(&format!("{}/items/{uuid}", common::API))
+        .await;
 
     response.assert_status_no_content();
 }
@@ -213,16 +217,18 @@ async fn delete_item_is_no_longer_retrievable() {
     let server = setup().await;
 
     let response = server
-        .post("/items")
+        .post(&format!("{}/items", common::API))
         .json(&json!({"media_type": "show", "title": "One Piece"}))
         .await;
 
     let body: serde_json::Value = response.json();
     let uuid = body["id"].as_str().unwrap();
 
-    server.delete(&format!("/items/{uuid}")).await;
+    server
+        .delete(&format!("{}/items/{uuid}", common::API))
+        .await;
 
-    let response = server.get(&format!("/items/{uuid}")).await;
+    let response = server.get(&format!("{}/items/{uuid}", common::API)).await;
 
     response.assert_status_not_found();
 }
@@ -232,7 +238,7 @@ async fn search_items_returns_results() {
     let server = setup().await;
 
     let response = server
-        .get("/items/search")
+        .get(&format!("{}/items/search", common::API))
         .add_query_param("q", "One Piece")
         .add_query_param("media_type", "show")
         .await;
@@ -247,7 +253,7 @@ async fn search_items_returns_400_for_unsupported_media_type() {
     let server = setup().await;
 
     let response = server
-        .get("/items/search")
+        .get(&format!("{}/items/search", common::API))
         .add_query_param("q", "One Piece")
         .add_query_param("media_type", "not_a_media_type")
         .await;
@@ -260,7 +266,7 @@ async fn search_items_returns_400_for_unimplemented_book() {
     let server = setup().await;
 
     let response = server
-        .get("/items/search")
+        .get(&format!("{}/items/search", common::API))
         .add_query_param("q", "Dune")
         .add_query_param("media_type", "book")
         .await;
@@ -273,7 +279,7 @@ async fn search_items_returns_400_for_unimplemented_podcast() {
     let server = setup().await;
 
     let response = server
-        .get("/items/search")
+        .get(&format!("{}/items/search", common::API))
         .add_query_param("q", "Call Her Daddy")
         .add_query_param("media_type", "podcast")
         .await;
@@ -286,7 +292,7 @@ async fn import_item_returns_201_with_item() {
     let server = setup().await;
 
     let response = server
-        .post("/items/import")
+        .post(&format!("{}/items/import", common::API))
         .json(&json!({
             "external_id": "37854",
             "title": "One Piece",
@@ -313,7 +319,7 @@ async fn import_item_returns_409_with_existing_external_id() {
     let server = setup().await;
 
     server
-        .post("/items/import")
+        .post(&format!("{}/items/import", common::API))
         .json(&json!({
             "external_id": "37854",
             "title": "One Piece",
@@ -330,7 +336,7 @@ async fn import_item_returns_409_with_existing_external_id() {
         .await;
 
     let response = server
-        .post("/items/import")
+        .post(&format!("{}/items/import", common::API))
         .json(&json!({
             "external_id": "37854",
             "title": "ONE PIECE",
@@ -354,7 +360,7 @@ async fn import_item_returns_422_with_missing_required_fields() {
     let server = setup().await;
 
     let response = server
-        .post("/items/import")
+        .post(&format!("{}/items/import", common::API))
         .json(&json!({
             "title": "One Piece",
             "year": "1999-10-20",
