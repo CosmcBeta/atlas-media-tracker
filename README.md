@@ -7,3 +7,5 @@ todo:
 - add a way to check igdb auth automatically when the token expires, allowing the server to be ran forever without constant restarts
 - add books api, figure out which to use first
 - add podcast api
+- add colors for lists
+- update icons for creating and updating lists to have all of lucids icons by importing all of them and making a picker for them

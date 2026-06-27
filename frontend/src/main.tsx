@@ -6,8 +6,13 @@ import { BrowserRouter } from "react-router";
 import App from "./App.tsx";
 
 const queryClient = new QueryClient();
+const rootElement = document.getElementById("root");
 
-createRoot(document.getElementById("root")!).render(
+if (!rootElement) {
+	throw new Error("Root element not found");
+}
+
+createRoot(rootElement).render(
 	<StrictMode>
 		<QueryClientProvider client={queryClient}>
 			<BrowserRouter>

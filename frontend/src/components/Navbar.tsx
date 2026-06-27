@@ -23,16 +23,16 @@ const OVERLAY_ANIMATION: MotionProps = {
 	exit: { opacity: 0, transition: { duration: 0.1 } },
 };
 
-// const BUTTONS_ANIMATION: MotionProps = {
-// 	initial: { filter: "blur(4px)", opacity: 0, y: 20 },
-// 	animate: { filter: "blur(0px)", opacity: 1, y: 0 },
-// 	exit: { filter: "blur(4px)", opacity: 0, y: 20 },
-// 	transition: {
-// 		duration: 0.1 * LINKS.length,
-// 		ease: [0.19, 1, 0.22, 1],
-// 		delay: 0.7,
-// 	},
-// };
+const BUTTONS_ANIMATION: MotionProps = {
+	initial: { filter: "blur(4px)", opacity: 0, y: 20 },
+	animate: { filter: "blur(0px)", opacity: 1, y: 0 },
+	exit: { filter: "blur(4px)", opacity: 0, y: 20 },
+	transition: {
+		duration: 0.1 * LINKS.length,
+		ease: [0.19, 1, 0.22, 1],
+		delay: 0.7,
+	},
+};
 
 const ITEMS_CONTAINER_ANIMATION: MotionProps = {
 	initial: "init",
@@ -107,7 +107,7 @@ function DesktopNavbar() {
 				))}
 			</ul>
 
-			{/*<Actions />*/}
+			<Actions />
 		</div>
 	);
 }
@@ -122,9 +122,9 @@ function MobileNavbar() {
 
 	return (
 		<div className="flex lg:hidden items-center gap-2">
-			{/*<div className="hidden sm:block">
+			<div className="hidden sm:block">
 				<Actions />
-			</div>*/}
+			</div>
 
 			<AnimatePresence>
 				{isOpen && (
@@ -156,9 +156,9 @@ function MobileNavbar() {
 							))}
 						</motion.ul>
 
-						{/*<motion.div {...BUTTONS_ANIMATION} className="block sm:hidden">
+						<motion.div {...BUTTONS_ANIMATION} className="block sm:hidden">
 							<Actions />
-						</motion.div>*/}
+						</motion.div>
 					</motion.div>
 				)}
 			</AnimatePresence>
@@ -170,25 +170,25 @@ function MobileNavbar() {
 	);
 }
 
-// function Actions() {
-// 	return (
-// 		<div className="flex items-center gap-2 px-0">
-// 			<Link to="#">
-// 				<Button variant="ghost" className="text-muted-foreground">
-// 					Log in
-// 				</Button>
-// 			</Link>
+function Actions() {
+	return (
+		<div className="flex items-center gap-2 px-0">
+			<Link to="#">
+				<Button variant="ghost" className="text-muted-foreground">
+					Log in
+				</Button>
+			</Link>
 
-// 			<Link to="#">
-// 				<Button>Sign up</Button>
-// 			</Link>
-// 		</div>
-// 	);
-// }
+			<Link to="#">
+				<Button>Sign up</Button>
+			</Link>
+		</div>
+	);
+}
 
 function Logo() {
 	return (
-		<Link to="#" className="text-xl font-bold text-primary tracking-tighter">
+		<Link to="/" className="text-xl font-bold text-primary tracking-tighter">
 			Atlas
 		</Link>
 	);
